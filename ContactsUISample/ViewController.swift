@@ -3,22 +3,18 @@
 //  ContactsUISample
 //
 //  Created by koogawa on 2015/09/27.
-//  Copyright © 2015年 Kosuke Ogawa. All rights reserved.
+//  Copyright © 2015 Kosuke Ogawa. All rights reserved.
 //
 
 import UIKit
 import Contacts
 import ContactsUI
 
-class ViewController: UIViewController, CNContactPickerDelegate, CNContactViewControllerDelegate {
-
-    private var contactStore: CNContactStore!
+class ViewController: UIViewController, CNContactPickerDelegate {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-
         // Do any additional setup after loading the view, typically from a nib.
-        showContactPickerController()
     }
 
     override func didReceiveMemoryWarning() {
@@ -28,39 +24,38 @@ class ViewController: UIViewController, CNContactPickerDelegate, CNContactViewCo
 
     // MARK: Private methods
 
-    private func showContactPickerController() {
-        let picker = CNContactPickerViewController()
-        picker.delegate = self
+    @IBAction func showContactPickerController() {
+        let pickerViewController = CNContactPickerViewController()
+        pickerViewController.delegate = self
 
-        // Display only a person's phone, email, and birthdate
-        let displayedItems = [CNContactPhoneNumbersKey, CNContactEmailAddressesKey, CNContactBirthdayKey]
-        picker.displayedPropertyKeys = displayedItems
+        // Display only a person's phone, email, and postal address
+        let displayedItems = [CNContactPhoneNumbersKey, CNContactEmailAddressesKey, CNContactPostalAddressesKey]
+        pickerViewController.displayedPropertyKeys = displayedItems
 
         // Show the picker
-        self.presentViewController(picker, animated: true, completion: nil)
+        self.presentViewController(pickerViewController, animated: true, completion: nil)
     }
 
     // MARK: CNContactPickerDelegate methods
 
-    // The selected person and property from the people picker.
+    // Called when a property of the contact has been selected by the user.
     func contactPicker(picker: CNContactPickerViewController, didSelectContactProperty contactProperty: CNContactProperty) {
         let contact = contactProperty.contact
         let contactName = CNContactFormatter.stringFromContact(contact, style: .FullName) ?? ""
         let propertyName = CNContact.localizedStringForKey(contactProperty.key)
-        let message = "Picked \(propertyName) for \(contactName)"
+        let title = "\(contactName)'s \(propertyName)"
 
         dispatch_async(dispatch_get_main_queue()) {
-            let alert = UIAlertController(title: "Picker Result",
-                message: message,
+            let alert = UIAlertController(title: title,
+                message: contactProperty.value?.description,
                 preferredStyle: .Alert)
             alert.addAction(UIAlertAction(title: "OK", style: .Default, handler: nil))
             self.presentViewController(alert, animated: true, completion: nil)
         }
     }
 
-    // Implement this if you want to do additional work when the picker is cancelled by the user.
+    // Called when the user taps Cancel.
     func contactPickerDidCancel(picker: CNContactPickerViewController) {
-        picker.dismissViewControllerAnimated(true, completion: {})
     }
 
 }
